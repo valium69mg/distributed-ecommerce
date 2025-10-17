@@ -15,8 +15,12 @@ async def verify_token(request : Request):
     
     url = f"http://{AUTH_ADDRESS}/auth"  
     headers = {"Authorization": f"{token}"}
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+    except httpx.RequestError:
+        # Auth service unreachable
+        raise HTTPException(status_code=500, detail="Auth service unavailable")
         
     if response.status_code == 200:
         data = response.json()
