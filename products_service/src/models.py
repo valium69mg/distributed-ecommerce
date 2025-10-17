@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float, Text
+from sqlalchemy import Column, Integer, String, Float, Text, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -13,3 +14,14 @@ class Product(Base):
     stock = Column(Integer, default=0)
     user_id = Column(String, nullable=False)
 
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+    category = relationship("Category", back_populates="products")
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+
+    products = relationship("Product", back_populates="category")
