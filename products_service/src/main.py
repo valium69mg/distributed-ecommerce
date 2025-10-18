@@ -32,7 +32,7 @@ async def create_product_endpoint(product: ProductCreate, db: Session = Depends(
 async def search_products(query: str = Query(..., min_length=2), db: Session = Depends(get_db), user: UserRoles = Depends(verify_token)):
     return await search_products_by_name(db, query)
 
-@app.get("/categories/", response_model=list[CategoryRead])
+@app.get("/products/categories/", response_model=list[CategoryRead])
 async def read_categories(
     request: Request,
     db: Session = Depends(get_db),
