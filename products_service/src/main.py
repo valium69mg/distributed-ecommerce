@@ -1,12 +1,19 @@
 from fastapi import FastAPI, Depends, Request, Query
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from product_service import get_all_products, create_product, search_products_by_name
 from dtos import *
 from auth_service import verify_token  
 from category_service import get_all_categories
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],           
+    allow_credentials=True,
+    allow_methods=["*"],           
+    allow_headers=["*"],           
+)
 def get_db():
     db = SessionLocal()
     try:
