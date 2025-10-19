@@ -6,7 +6,9 @@ from product_service import get_all_products, create_product, search_products_by
 from dtos import *
 from auth_service import verify_token  
 from category_service import get_all_categories
+
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],           
