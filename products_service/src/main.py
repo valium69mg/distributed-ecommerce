@@ -6,8 +6,45 @@ from product_service import get_all_products, create_product, search_products_by
 from dtos import *
 from auth_service import verify_token  
 from category_service import get_all_categories
+from aiokafka import AIOKafkaConsumer
+import asyncio
+import os, json
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+consumer = None 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global consumer
+    kafka_host = os.getenv("KAFKA_HOST", "localhost")
+    kafka_port = os.getenv("KAFKA_PORT", "9092")
+    kafka_address = f"{kafka_host}:{kafka_port}"
+
+    consumer = AIOKafkaConsumer(
+        "order-events",
+        bootstrap_servers=kafka_address,
+        group_id="fastapi-consumer-group",
+        auto_offset_reset="earliest"
+    )
+    await consumer.start()
+    print("Kafka consumer started")
+
+    async def consume():
+        async for msg in consumer:
+            try:
+                data = json.loads(msg.value.decode())
+                print("Parsed JSON:", data)
+            except json.JSONDecodeError as e:
+                print("Failed to parse JSON:", e)
+
+    asyncio.create_task(consume())
+
+    yield
+
+    await consumer.stop()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
