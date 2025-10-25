@@ -5,8 +5,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.orders.kafka.module.KafkaService;
+import com.ecommerce.orders.kafka.module.dto.OrderEventDTO;
 import com.ecommerce.orders.module.dto.CreateOrderDTO;
 import com.ecommerce.orders.module.dto.OrderByIdDTO;
+import com.ecommerce.orders.module.dto.OrderStatus;
 import com.ecommerce.orders.module.entity.Order;
 import com.ecommerce.orders.module.entity.OrderProduct;
 import com.ecommerce.orders.module.repository.OrderProductRepository;
@@ -21,13 +24,14 @@ public class OrderService {
 
 	private final OrderRepository orderRepository;
 	private final OrderProductRepository orderProductRepository;
+	private final KafkaService kafkaService;
 	
 	@Transactional
 	public void createOrder(CreateOrderDTO dto) {
 		Order newOrder = new Order();
 		newOrder.setUserId(dto.getUserId());
 		newOrder.setCurrencyType(dto.getCurrencyType());
-		
+		newOrder.setStatus(OrderStatus.PENDING);
 		
 		List<OrderProduct> orderProducts =  dto.getProducts().stream().map(p -> {
 			OrderProduct newOrderProduct = new OrderProduct();
@@ -40,6 +44,9 @@ public class OrderService {
 		
 		orderRepository.save(newOrder);
 		orderProductRepository.saveAll(orderProducts);
+		
+		OrderEventDTO orderEventDTO = kafkaService.createOrderEventDTO(newOrder, orderProducts);
+		kafkaService.sendOrderEvent(orderEventDTO);
 		
 	}
 	

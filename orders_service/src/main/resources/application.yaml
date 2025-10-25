@@ -20,6 +20,17 @@ spring:
     init:
       mode: never
 
+  kafka:
+      bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+      consumer:
+        group-id: orders-group
+        auto-offset-reset: earliest
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      producer:
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 server:
   port: 4000
   address: 0.0.0.0
