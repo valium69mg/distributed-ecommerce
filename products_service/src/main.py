@@ -9,39 +9,60 @@ from category_service import get_all_categories
 from aiokafka import AIOKafkaConsumer
 import asyncio
 import os, json
+from pydantic import ValidationError
 from contextlib import asynccontextmanager
-
-consumer = None 
+from aiokafka import AIOKafkaProducer
+import kafka_client 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global consumer
     kafka_host = os.getenv("KAFKA_HOST", "localhost")
     kafka_port = os.getenv("KAFKA_PORT", "9092")
     kafka_address = f"{kafka_host}:{kafka_port}"
 
-    consumer = AIOKafkaConsumer(
+    # Start Kafka consumer
+    kafka_client.consumer = AIOKafkaConsumer(
         "order-events",
         bootstrap_servers=kafka_address,
         group_id="fastapi-consumer-group",
         auto_offset_reset="earliest"
     )
-    await consumer.start()
+    await kafka_client.consumer.start()
     print("Kafka consumer started")
 
+    # Start Kafka producer
+    kafka_client.producer = AIOKafkaProducer(bootstrap_servers=kafka_address)
+    await kafka_client.producer.start()
+    print("Kafka producer started")
+
     async def consume():
-        async for msg in consumer:
+        async for msg in kafka_client.consumer:
             try:
                 data = json.loads(msg.value.decode())
-                print("Parsed JSON:", data)
+                order_event = OrderEventDTO(**data)
+
+                db_gen = get_db()
+                db = next(db_gen)
+
+                try:
+                    print(f"Excecuting order event: {order_event}")
+                    await excecuteOrderEvent(db, order_event)
+                finally:
+                    db_gen.close()
+
             except json.JSONDecodeError as e:
                 print("Failed to parse JSON:", e)
+            except ValidationError as ve:
+                print("DTO validation failed:", ve)
+            except Exception as e:
+                print("Unexpected error during event processing:", e)
 
     asyncio.create_task(consume())
 
     yield
 
-    await consumer.stop()
+    await kafka_client.consumer.stop()
+    await kafka_client.producer.stop()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -77,7 +98,7 @@ async def read_product(
 ):
     return await get_product_by_id(db, id)
 
-@app.get("/products/", response_model=list[ProductRead])
+@app.post("/products/", response_model=list[ProductRead])
 async def read_products_by_ids(
     ids: list[int],
     request: Request,

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List
+from enum import Enum
 
 class UserRoles(BaseModel):
     userId: str
@@ -27,3 +28,17 @@ class ProductCreate(BaseModel):
 class CategoryRead(BaseModel):
     id: int
     name: str
+
+class OrderEventType(Enum):
+    CREATE = "CREATE"
+    APPROVED_STOCK = "APPROVED_STOCK"
+    NO_STOCK = "NO_STOCK"
+
+class ProductEventDTO(BaseModel):
+    units: int
+    productId: int
+
+class OrderEventDTO(BaseModel):
+    orderId: int
+    type: OrderEventType
+    products: List[ProductEventDTO]
