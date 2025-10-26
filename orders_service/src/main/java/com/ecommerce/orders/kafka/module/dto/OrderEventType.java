@@ -6,5 +6,7 @@ import lombok.Getter;
 public enum OrderEventType {
 
 	CREATE,
+    APPROVED_STOCK,
+    NO_STOCK,
 	
 }

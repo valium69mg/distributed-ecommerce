@@ -23,7 +23,6 @@ public class CreateOrderDTO {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class ProductForOrderDTO {
-		private Double pricePerUnit;
 		private Integer units;
 		private Integer productId;
 	}

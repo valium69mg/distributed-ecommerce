@@ -6,8 +6,8 @@ import lombok.Getter;
 public enum OrderStatus {
 
 	PENDING,
-	PAYED,
 	CONFIRMED,
+	PAYED,
 	SHIPPED,
 	DELIVERED,
 	CANCELED

@@ -16,6 +16,8 @@ public class OrderByIdDTO {
 	private Integer orderId;
 	private String userId;
 	private List<ProductByIdDTO> products;
+	private Double total;
+	private OrderStatus status;
 	
 	@Data
 	@Builder
@@ -25,6 +27,7 @@ public class OrderByIdDTO {
 		private Double pricePerUnit;
 		private Integer units;
 		private Integer productId;
+		private Double totalPrice;
 	}
 
 }
