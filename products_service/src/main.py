@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Depends, Request, Query
+from fastapi import FastAPI, Depends, Request, Query, Path
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
-from product_service import get_all_products, create_product, search_products_by_name
+from product_service import *
 from dtos import *
 from auth_service import verify_token  
 from category_service import get_all_categories
@@ -67,6 +67,15 @@ async def read_products(
     user: UserRoles = Depends(verify_token)
     ):
     return await get_all_products(db)
+
+@app.get("/products/{id}", response_model=ProductRead)
+async def read_product(
+    request: Request,
+    id: int = Path(..., title="The ID of the product to retrieve"),
+    db: Session = Depends(get_db),
+    user: UserRoles = Depends(verify_token)
+):
+    return await get_product_by_id(db, id)
 
 @app.post('/products/')
 async def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db), user: UserRoles = Depends(verify_token)):

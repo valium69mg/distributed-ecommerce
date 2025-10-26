@@ -13,7 +13,7 @@ class Product(Base):
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
     user_id = Column(String, nullable=False)
-    programmed_deletion = Column(Boolean, nullable=False)
+    is_deleted = Column(Boolean, nullable=False, default=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     category = relationship("Category", back_populates="products")
 
