@@ -2,9 +2,8 @@ version: '3.8'
 
 services:
   users:
-    build:
-      context: ./users_service
-    container_name: users_service
+    image: carlostranquilinocr98/ecommerce:users
+    container_name: users
     ports:
       - "3000:3000"
     restart: unless-stopped
@@ -15,11 +14,12 @@ services:
       DB_NAME: ecommerce_users
       DB_PORT: 3306
       JWT_SECRET: shhhhhhhhhhhhh
+    networks:
+      - ecommerce-net
 
   products:
-    build:
-      context: ./products_service
-    container_name: products_service
+    image: carlostranquilinocr98/ecommerce:products
+    container_name: products
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -29,14 +29,15 @@ services:
       DB_PASSWORD: carlostr
       DB_NAME: ecommerce_products
       DB_PORT: 5432
-      AUTH_ADDRESS: users_service:3000
+      AUTH_ADDRESS: users:3000
       KAFKA_HOST: kafka-1
       KAFKA_PORT: 9092
+    networks:
+      - ecommerce-net
 
   orders:
-    build:
-      context: ./orders_service
-    container_name: orders_service
+    image: carlostranquilinocr98/ecommerce:orders
+    container_name: orders
     ports:
       - "4000:4000"
     restart: unless-stopped
@@ -46,8 +47,12 @@ services:
       DB_PASS: admin
       DB_NAME: ecommerce_orders
       DB_PORT: 3306
+      PRODUCTS_HOST: products
+      PRODUCTS_PORT: 8000
       KAFKA_HOST: kafka-1
       KAFKA_PORT: 9092
+    networks:
+      - ecommerce-net
 
   kafka-1: 
     image: bitnami/kafka:latest
@@ -66,6 +71,12 @@ services:
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     volumes:
       - kafka_data:/bitnami/kafka
+    networks:
+      - ecommerce-net
 
 volumes:
   kafka_data:
+
+networks:
+  ecommerce-net:
+    driver: bridge
