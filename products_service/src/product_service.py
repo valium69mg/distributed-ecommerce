@@ -31,6 +31,16 @@ async def get_product_by_id(db: Session, id: int) -> ProductRead:
         user_id=row.user_id
     )
 
+async def get_products_by_ids(db: Session, ids: list[int]) -> list[ProductRead]:
+    sql = text("""
+            SELECT id, name, description, price, stock, user_id
+            FROM products
+            WHERE id IN (:ids)   
+        """)
+    result = db.execute(sql, {"ids": ids})
+    rows = result.mappings().all()
+    return [ProductRead(**dict(row)) for row in rows]
+
 async def create_product(db: Session, product: ProductCreate, user_id: str) -> None:
     sql = text("""
         INSERT INTO products (name, description, price, stock, user_id, category_id)

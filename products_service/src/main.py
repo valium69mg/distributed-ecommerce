@@ -77,6 +77,15 @@ async def read_product(
 ):
     return await get_product_by_id(db, id)
 
+@app.get("/products/", response_model=list[ProductRead])
+async def read_products_by_ids(
+    ids: list[int],
+    request: Request,
+    db: Session = Depends(get_db),
+    user: UserRoles = Depends(verify_token),
+):
+    return await get_products_by_ids(db, ids)
+
 @app.post('/products/')
 async def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db), user: UserRoles = Depends(verify_token)):
     user_id = user.userId
