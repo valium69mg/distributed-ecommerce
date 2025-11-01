@@ -1,9 +1,14 @@
 from sqlalchemy import text, bindparam
 from sqlalchemy.orm import Session
 from dtos import *
-from fastapi import HTTPException
+from fastapi import UploadFile, HTTPException
 import kafka_client
 import json
+from fastapi import File
+import uuid
+import os
+from sqlalchemy import select
+from models import Photo
 
 async def get_all_products(db: Session) -> list[ProductRead]:
     sql = text("SELECT id, name, description, price, stock, user_id FROM products")
@@ -68,6 +73,66 @@ async def search_products_by_name(db: Session, query: str) -> list[ProductRead]:
     result = db.execute(sql, {"pattern": f"%{query}%", "query": query})
     rows = result.mappings().all()
     return [ProductRead(**dict(row)) for row in rows]
+
+async def upload_photos(db: Session, product_id: int, files: List[UploadFile], dir: str) -> None:
+    os.makedirs(dir, exist_ok=True)
+    photo_paths = []
+    for file in files:
+        ext = os.path.splitext(file.filename)[1].lower()
+        unique_name = f"{uuid.uuid4()}{ext}"
+        file_path = os.path.abspath(os.path.join(dir, unique_name))
+        content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+        photo_paths.append(file_path)
+    try:
+        insert_photos_sql = text("""
+            INSERT INTO photos (path)
+            VALUES (:path)
+            RETURNING id
+        """)
+        photo_ids = []
+        for path in photo_paths:
+            result = db.execute(insert_photos_sql, {"path": path})
+            photo_id = result.scalar()
+            photo_ids.append(photo_id)
+        insert_links_sql = text("""
+            INSERT INTO product_photos (product_id, photo_id)
+            VALUES (:product_id, :photo_id)
+        """)
+        db.execute(
+            insert_links_sql,
+            [{"product_id": product_id, "photo_id": pid} for pid in photo_ids]
+        )
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    
+def get_photo_path_by_id(db: Session, photo_id: int) -> str | None:
+    photo = db.execute(select(Photo).where(Photo.id == photo_id)).scalar_one_or_none()
+    return photo.path if photo else None
+            
+async def validate_photos_format(files: List[File]) -> None:
+    allowed_extensions = {ext.value for ext in PhotoExtensions}
+    invalid_files = []
+
+    for file in files:
+        try:
+            filename = file.filename
+            _, extension = os.path.splitext(filename)
+            extension = extension.lower().strip(".")
+            if extension not in allowed_extensions:
+                invalid_files.append(filename)
+        except Exception:
+            raise HTTPException(status_code=400, detail=f"Could not extract image format from: {file.filename}")
+
+    if invalid_files:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Unsupported file formats: {', '.join(invalid_files)}. Allowed formats are: {', '.join(allowed_extensions)}"
+        )
+    
 
 async def excecuteOrderEvent(db: Session, json: OrderEventDTO):
     if json.type == EventType.CREATE:

@@ -25,3 +25,22 @@ class Category(Base):
     name = Column(String, unique=True, nullable=False)
 
     products = relationship("Product", back_populates="category")
+
+class Photo(Base):
+    __tablename__ = "photos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    path = Column(String, nullable=False)
+
+    product_links = relationship("ProductPhoto", back_populates="photo")
+
+
+class ProductPhoto(Base):
+    __tablename__ = "product_photos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    photo_id = Column(Integer, ForeignKey("photos.id"), nullable=False)
+
+    product = relationship("Product", backref="photo_links")
+    photo = relationship("Photo", back_populates="product_links")

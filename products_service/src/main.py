@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request, Query, Path
+from fastapi import FastAPI, Depends, Request, Query, Path, UploadFile, File
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from contextlib import asynccontextmanager
 from aiokafka import AIOKafkaProducer
 import kafka_client 
+from fastapi.responses import FileResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -108,10 +109,28 @@ async def read_products_by_ids(
     return await get_products_by_ids(db, ids)
 
 @app.post('/products/')
-async def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db), user: UserRoles = Depends(verify_token)):
+async def create_product(product: ProductCreate, db: Session = Depends(get_db), user: UserRoles = Depends(verify_token)):
     user_id = user.userId
     await create_product(db, product, user_id)
     return {"message": "Product created successfully"}
+
+@app.post("/products/uploadPhotos")
+async def upload_photos_endpoint(files: List[UploadFile] = File(...), 
+        product_id: int = Query(..., description="ID of the product"),
+        db: Session = Depends(get_db), 
+        user: UserRoles = Depends(verify_token)):
+    
+    await validate_photos_format(files)
+    await upload_photos(db, product_id, files, os.getenv('PHOTOS_DIR'))
+    
+    return {"message": "Files created successfully"}
+
+@app.get("/product/photos/{photo_id}")
+def serve_photo(photo_id: int, db: Session = Depends(get_db)):
+    path = get_photo_path_by_id(db, photo_id)
+    if not path:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    return FileResponse(path)
 
 @app.get("/products/search", response_model=list[ProductRead])
 async def search_products(query: str = Query(..., min_length=2), db: Session = Depends(get_db), user: UserRoles = Depends(verify_token)):

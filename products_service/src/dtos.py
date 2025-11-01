@@ -42,3 +42,8 @@ class OrderEventDTO(BaseModel):
     orderId: int
     type: EventType
     products: List[ProductEventDTO]
+
+class PhotoExtensions(Enum):
+    PNG = "png"
+    JPG = "jpg"
+    JPEG = "jpeg"
