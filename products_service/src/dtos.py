@@ -29,7 +29,7 @@ class CategoryRead(BaseModel):
     id: int
     name: str
 
-class OrderEventType(Enum):
+class EventType(Enum):
     CREATE = "CREATE"
     APPROVED_STOCK = "APPROVED_STOCK"
     NO_STOCK = "NO_STOCK"
@@ -40,5 +40,5 @@ class ProductEventDTO(BaseModel):
 
 class OrderEventDTO(BaseModel):
     orderId: int
-    type: OrderEventType
+    type: EventType
     products: List[ProductEventDTO]

@@ -70,7 +70,7 @@ async def search_products_by_name(db: Session, query: str) -> list[ProductRead]:
     return [ProductRead(**dict(row)) for row in rows]
 
 async def excecuteOrderEvent(db: Session, json: OrderEventDTO):
-    if json.type == OrderEventType.CREATE:
+    if json.type == EventType.CREATE:
         try:
             with db.begin(): 
                 for product in json.products:
@@ -104,7 +104,7 @@ async def excecuteOrderEvent(db: Session, json: OrderEventDTO):
 
             approved_event = OrderEventDTO(
                 orderId=json.orderId,
-                type=OrderEventType.APPROVED_STOCK,
+                type=EventType.APPROVED_STOCK,
                 products=json.products
             )
             print("Sending APPROVED_STOCK event for order", json.orderId)
@@ -114,7 +114,7 @@ async def excecuteOrderEvent(db: Session, json: OrderEventDTO):
             db.rollback()
             no_stock_event = OrderEventDTO(
                 orderId=json.orderId,
-                type=OrderEventType.NO_STOCK,
+                type=EventType.NO_STOCK,
                 products=json.products
             )
             await send_order_event(no_stock_event)
@@ -128,5 +128,5 @@ async def send_order_event(event: OrderEventDTO):
     payload["type"] = event.type.value 
 
     message = json.dumps(payload).encode("utf-8")
-    await kafka_client.producer.send_and_wait("order-events", message)
+    await kafka_client.producer.send_and_wait("product-events", message)
     print("Kafka event sent:", message)

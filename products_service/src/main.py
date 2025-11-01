@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     kafka_client.consumer = AIOKafkaConsumer(
         "order-events",
         bootstrap_servers=kafka_address,
-        group_id="fastapi-consumer-group",
+        group_id="products-consumer-group",
         auto_offset_reset="earliest"
     )
     await kafka_client.consumer.start()
