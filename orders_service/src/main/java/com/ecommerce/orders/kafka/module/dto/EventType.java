@@ -3,7 +3,7 @@ package com.ecommerce.orders.kafka.module.dto;
 import lombok.Getter;
 
 @Getter
-public enum OrderEventType {
+public enum EventType {
 
 	CREATE,
     APPROVED_STOCK,

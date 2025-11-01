@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class OrderEventDTO {
 
 	private Integer orderId;
-	private OrderEventType type;
+	private EventType type;
 	private List<ProductEventDTO> products;
 	
 	@Data

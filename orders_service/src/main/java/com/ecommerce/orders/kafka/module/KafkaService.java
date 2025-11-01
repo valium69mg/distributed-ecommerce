@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.ecommerce.orders.kafka.module.dto.EventType;
 import com.ecommerce.orders.kafka.module.dto.OrderEventDTO;
-import com.ecommerce.orders.kafka.module.dto.OrderEventType;
 import com.ecommerce.orders.kafka.module.dto.OrderEventDTO.ProductEventDTO;
 import com.ecommerce.orders.module.entity.Order;
 import com.ecommerce.orders.module.entity.OrderProduct;
@@ -26,7 +26,7 @@ public class KafkaService {
 	public OrderEventDTO createOrderEventDTO(Order order, List<OrderProduct> orderProducts) {
 		OrderEventDTO orderEventDTO = new OrderEventDTO();
 		orderEventDTO.setOrderId(order.getOrderId());
-		orderEventDTO.setType(OrderEventType.CREATE);
+		orderEventDTO.setType(EventType.CREATE);
 		List<ProductEventDTO> productEventDTOs = orderProducts.stream().map(op -> {
 			ProductEventDTO productEventDTO = new ProductEventDTO();
 			productEventDTO.setProductId(op.getProductId());

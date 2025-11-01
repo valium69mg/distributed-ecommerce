@@ -9,8 +9,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.orders.kafka.module.KafkaService;
+import com.ecommerce.orders.kafka.module.dto.EventType;
 import com.ecommerce.orders.kafka.module.dto.OrderEventDTO;
-import com.ecommerce.orders.kafka.module.dto.OrderEventType;
 import com.ecommerce.orders.module.dto.CreateOrderDTO;
 import com.ecommerce.orders.module.dto.OrderByIdDTO;
 import com.ecommerce.orders.module.dto.OrderStatus;
@@ -129,10 +129,10 @@ public class OrderService {
 	    return orderByIdDTO;
 	}
 	
-	@KafkaListener(topics = "order-events", groupId = "order-events-group", containerFactory = "kafkaListenerContainerFactory")
+	@KafkaListener(topics = "product-events", groupId = "order-consumer-group", containerFactory = "kafkaListenerContainerFactory")
     public void consumeOrderEvent(OrderEventDTO event) {
 		switch (event.getType()) {
-		case OrderEventType.APPROVED_STOCK: {
+		case EventType.APPROVED_STOCK: {
 			log.info("Received Kafka event: {}", event);
 	        Optional<Order> orderOpt = orderRepository.findById(event.getOrderId());
 	        if (orderOpt.isPresent()) {
@@ -143,7 +143,7 @@ public class OrderService {
 			break;
 			
 		}
-		case OrderEventType.NO_STOCK: {
+		case EventType.NO_STOCK: {
 			log.info("Received Kafka event: {}", event);
 	        Optional<Order> orderOpt = orderRepository.findById(event.getOrderId());
 	        if (orderOpt.isPresent()) {
