@@ -29,3 +29,7 @@ spec:
               value: "ecommerce_products"
             - name: AUTH_ADDRESS
               value: "users-service:3000"
+            - name: KAFKA_HOST
+              value: "kafka-service"
+            - name: KAFKA_PORT
+              value: 9092
