@@ -5,16 +5,23 @@ import AnchorLink from "./AnchorLink"
 import OptionWindow from "./OptionWindow"
 import UserSettings from "./UserSettings"
 import { useState } from "react"
+
+import { HiShoppingBag } from "react-icons/hi2";
+
 const navBarStyle = {
     width: "100%",
     display: "flex",
     gap: "3px",
-    border: "1px solid black",
-    borderRadius: "3px"
+    borderRadius: "3px",
+    padding: "24px 12px",
+    boxShadow: "0px 0px 6px 0px rgba(0,0,0,0.5)",
+    backgroundColor: 'whitesmoke',
+    alignItems: "center",
+    fontFamily: "sans-serif"
 }
 
 const logoStyle = {
-    width: "10%"
+    width: "5%"
 }
 
 
@@ -27,30 +34,29 @@ export default function NavBar() {
 
     return (
         <nav style={navBarStyle}>
-            <span style={logoStyle}> x </span>
+            <span style={logoStyle}> <HiShoppingBag size={24}/> </span>
             <Categories>
-                <AnchorLink/>
-                <AnchorLink/>
-                <AnchorLink/>
-                <AnchorLink/>
-                <AnchorLink/>
+                <AnchorLink linkName="Electronics"/>
+                <AnchorLink linkName="Books"/>
+                <AnchorLink linkName="Clothing"/>
+                <AnchorLink linkName="Home & Kitchen"/>
                 <DropDown setState={setCategoryDropdownOpen} isOpen={categoryDropdownOpen}>
-                    <OptionWindow>
-                        <AnchorLink/>
-                        <AnchorLink/>
-                        <AnchorLink/>
-                        <AnchorLink/>
+                    <OptionWindow width="80px">
+                        <AnchorLink linkName="Sports"/>
+                        <AnchorLink linkName="Toys"/>
+                        <AnchorLink linkName="Beauty"/>
+                        <AnchorLink linkName="Baby"/>
                     </OptionWindow>
                 </DropDown>
             </Categories>   
             <SearchBar/>
             <UserSettings>
-                <DropDown setState={setAccountDropdownOpen} text="Account..." isOpen={accountDropdownOpen} >
+                <DropDown setState={setAccountDropdownOpen} text="User" isOpen={accountDropdownOpen} >
                     <OptionWindow>
-                        <AnchorLink/>
-                        <AnchorLink/>
-                        <AnchorLink/>
-                        <AnchorLink/>
+                        <AnchorLink linkName="My Account"/>
+                        <AnchorLink linkName="Shopping Cart"/>
+                        <AnchorLink linkName="Orders"/>
+                        <AnchorLink linkName="Logout"/>
                     </OptionWindow>
                 </DropDown>
             </UserSettings>
