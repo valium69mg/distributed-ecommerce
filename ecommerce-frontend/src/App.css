@@ -1,4 +1,22 @@
-html, body {
-  margin: 0;
-  padding: 0;
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f0f0f0; 
+}
+
+.page > header {
+  height: 10vh;
+}
+
+.page > footer {
+  height: 10vh;
+}
+
+.page > .content {
+  flex: 1;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
